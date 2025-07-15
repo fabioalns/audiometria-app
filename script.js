@@ -1,375 +1,526 @@
-// Lookup tables from Tabla.csv (Source 6)
-const PERCENTAGE_DISABILITY_TABLE = {
-    0: 0, 100: 0, 105: 1.9, 110: 3.9, 115: 5.6, 120: 7.5, 125: 9.4, 130: 11.2, 135: 13.1,
-    140: 15, 145: 16.9, 150: 18.8, 155: 20.6, 160: 22.5, 165: 24.5, 170: 26.2, 175: 28.1,
-    180: 30, 185: 31.9, 190: 33.8, 195: 35.6, 200: 37.5, 205: 39.4, 210: 41.2, 215: 43.1,
-    220: 45, 225: 46.9, 230: 48.9, 235: 50.5, 240: 52.5, 245: 54.4, 250: 56.2, 255: 58.1,
-    260: 60, 265: 61.9, 270: 63.8, 275: 65.6, 280: 67.5, 285: 69.3, 290: 71.2, 295: 73.1,
-    300: 75, 305: 76.9, 310: 78.8, 315: 80.6, 320: 82.5, 325: 84.4, 330: 86.2, 335: 88.1,
-    340: 90, 345: 90.9, 350: 93.8, 355: 95.6, 360: 97.5, 365: 99.4, 370: 100
-};
-
-const HEARING_LOSS_SEVERITY_TABLE = [
-    { threshold: 20, description: "Normoacusia" },
-    { threshold: 21, description: "Pérdida leve" },
-    { threshold: 35, description: "Pérdida leve moderada" },
-    { threshold: 40, description: "Pérdida moderada" },
-    { threshold: 65, description: "Pérdida severa" },
-    { threshold: 80, description: "Pérdida profunda" },
-    { threshold: 110, description: "Cofosis" }
-];
-
-const TRANSMISSION_LOSS_TABLE = [
-    { threshold: -10, description: "No hay hipoacusia de transmisión" }, // Corrected spelling
-    { threshold: 20, description: "Posible componente de transmisión" }, // Corrected spelling
-    { threshold: 30, description: "Hipoacusia de Transmisión" },
-    { threshold: 50, description: "Marcada hipoacusia de transmisión" } // Corrected spelling
-];
-
-const ASYMMETRY_TABLE = [
-    { threshold: 0, description: "No asimetría" },
-    { threshold: 10, description: "Discreta asimetría" }, // Corrected spelling
-    { threshold: 15, description: "Asimetría" },
-    { threshold: 20, description: "Asimetría significativa" },
-    { threshold: 40, description: "Asimetría importante" }, // Corrected spelling
-    { threshold: 60, description: "Gran asimetría" }
-];
-
-const ASYMMETRY_HIGH_FREQ_TABLE = [
-    { threshold: 0, description: "No asimetría en tonos agudos" },
-    { threshold: 20, description: "Discreta asimetría en tonos agudos" }, // Corrected spelling
-    { threshold: 30, description: "Asimetría en tonos agudos" },
-    { threshold: 40, description: "Asimetría significativa en tonos agudos" },
-    { threshold: 50, description: "Asimetría importante en tonos agudos" }, // Corrected spelling
-    { threshold: 70, description: "Gran asimetría en tonos agudos" }
-];
-
-const AUDIOPROSTHESIS_TABLE = [
-    { threshold: 0, description: "No precisa audioprótesis" },
-    { threshold: 7.5, description: "Pérdida de audición leve, la amplificación audioprotésica es opcional" }, // Corrected spelling
-    { threshold: 22.5, description: "Pérdida de audición moderada, la amplificación audioprotésica es necesaria" }, // Corrected spelling
-    { threshold: 67.5, description: "Pérdida de audición severa, la amplificación audioprotésica es imprescindible" }, // Corrected spelling
-    { threshold: 100, description: "Pérdida de audición severa, la amplificación audioprotésica es imprescindible" } // Assuming 100 is max, matches 67.5 description
-];
-
-const FREQUENCIES = [250, 500, 1000, 2000, 3000, 4000, 8000];
-const CONVERSATIONAL_FREQUENCIES = [500, 1000, 2000, 3000];
-const HIGH_FREQUENCIES = [3000, 4000, 8000];
-
-
-// Function to get input values
-function getThresholds() {
-    const thresholds = {
-        va: { od: {}, oi: {} },
-        vo: { od: {}, oi: {} }
-    };
-
-    FREQUENCIES.forEach(freq => {
-        thresholds.va.od[freq] = parseInt(document.getElementById(`va-od-${freq}`).value) || 0;
-        thresholds.vo.od[freq] = parseInt(document.getElementById(`vo-od-${freq}`).value) || 0;
-        thresholds.va.oi[freq] = parseInt(document.getElementById(`va-oi-${freq}`).value) || 0;
-        thresholds.vo.oi[freq] = parseInt(document.getElementById(`vo-oi-${freq}`).value) || 0;
-    });
-    return thresholds;
+/* General styles for body and container */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5; /* Light grey background */
+    color: #333;
+    line-height: 1.6;
+    box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
 }
 
-// Function to automatically update bone conduction when air conduction changes
-function setupAutoUpdate() {
-    ['od', 'oi'].forEach(ear => {
-        FREQUENCIES.forEach(freq => {
-            const vaInput = document.getElementById(`va-${ear}-${freq}`);
-            const voInput = document.getElementById(`vo-${ear}-${freq}`);
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
 
-            if (vaInput && voInput) {
-                vaInput.addEventListener('input', (event) => {
-                    voInput.value = event.target.value; // Always auto-update VO when VA changes
-                    calculateAndDisplay(); // Recalculate on VA input change
-                });
+/* Alineación de títulos al centro */
+h1, h2, h3 {
+    color: #0056b3;
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
 
-                voInput.addEventListener('input', () => {
-                    // If VO is manually changed, simply recalculate.
-                    // The auto-update from VA will still override it if VA changes later.
-                    calculateAndDisplay(); // Recalculate on VO input change
-                });
-            }
-        });
-    });
+h1 {
+    font-size: 2.5em;
+    color: #004085;
+}
+
+h2 {
+    font-size: 1.8em;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 1.3em;
+    color: #007bff;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+/* Section styling - 'section-card' for consistent look */
+.section-card {
+    background-color: #f9fbfd; /* Very light blue/grey for sections */
+    border: 1px solid #e3e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Lighter shadow for sections */
+}
+
+/* Input styles */
+.input-group {
+    display: flex;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+    justify-content: center;
+    gap: 25px; /* Spacing between input items */
+    margin-bottom: 20px;
+}
+
+.input-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.input-item label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+    font-size: 0.95em;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    -moz-appearance: textfield; /* Hide arrows in Firefox for number inputs */
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Hide arrows in Chrome/Safari for number inputs */
+    margin: 0;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+select {
+    cursor: pointer;
+    background-color: #fff;
 }
 
 
-// Calculate Monoaural Loss (Sum of 500, 1000, 2000, 3000 Hz via Aérea)
-function calculateMonoauralLoss(earThresholds) {
-    let sum = 0;
-    CONVERSATIONAL_FREQUENCIES.forEach(freq => {
-        sum += earThresholds[freq];
-    });
-    return sum;
+/* Specific styles for audiometry input grid */
+.input-grid-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling for the grid */
+    margin-bottom: 20px;
+    padding-bottom: 10px; /* Space for scrollbar */
 }
 
-// Calculate Binaural Loss
-function calculateBinauralLoss(sumOD, sumOI) {
-    let betterEarSum = Math.min(sumOD, sumOI);
-    let worseEarSum = Math.max(sumOD, sumOI);
+.input-grid {
+    display: grid;
+    grid-template-columns: auto repeat(7, minmax(70px, 1fr)); /* Auto for label, then 7 flexible columns with min width */
+    gap: 12px 10px; /* Row gap, Column gap */
+    align-items: center;
+    min-width: 700px; /* Minimum width to ensure scrolling on small screens */
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fff;
+}
 
-    if (isNaN(betterEarSum) || isNaN(worseEarSum)) {
-        return 0; // Handle cases where sums might be NaN if inputs are invalid
+.input-grid h3 {
+    grid-column: 1 / -1; /* Span across all columns */
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    color: #007bff;
+    font-size: 1.2em;
+}
+
+.freq-labels {
+    display: contents; /* Makes children participate in parent grid */
+}
+
+.freq-labels label {
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #444;
+}
+
+.input-row {
+    display: contents; /* Makes children participate in parent grid */
+}
+
+.input-row label {
+    text-align: right;
+    padding-right: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+.input-grid input[type="number"] {
+    width: 100%; /* Fill grid cell */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+
+/* Button styles */
+.button-group {
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.05em;
+    margin: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px); /* Slight lift effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styles */
+.table-responsive-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling for the table */
+    margin-bottom: 20px;
+    padding-bottom: 10px; /* Space for scrollbar */
+}
+
+table {
+    width: 100%;
+    min-width: 700px; /* Minimum width for table to ensure scrolling */
+    border-collapse: collapse;
+    margin-bottom: 5px;
+    background-color: #fff;
+    border-radius: 8px; /* Rounded corners for the table */
+    overflow: hidden; /* Ensures rounded corners apply to content */
+}
+
+table, th, td {
+    border: 1px solid #e0e0e0;
+}
+
+th, td {
+    padding: 12px 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #eef5fc; /* Light blue background for headers */
+    font-weight: bold;
+    color: #333;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #f7fafd; /* Light stripe for rows */
+}
+
+tbody tr:hover {
+    background-color: #eef5fc; /* Highlight on hover */
+}
+
+
+/* Report sections */
+.report-section {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #e3e8ed;
+    border-radius: 8px;
+    background-color: #f9fbfd;
+    white-space: pre-wrap; /* Preserve formatting for reports */
+    font-family: 'Consolas', 'Courier New', monospace; /* Monospaced font for reports */
+    font-size: 0.95em;
+    color: #444;
+}
+
+/* Audiogram specific styles */
+.audiogram-section {
+    margin-top: 20px;
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #e3e8ed;
+    border-radius: 8px;
+    background-color: #fff; /* Ensure white background for SVG */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+#audiogram-svg, .comparison-single-graph svg {
+    overflow: visible; /* Allows symbols to go slightly outside viewBox if needed */
+    background-color: #fff;
+    max-width: 100%; /* Make SVG responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* --- Comparison Section Styles --- */
+.comparison-section {
+    background-color: #e6f7ff; /* Light blue background for distinction */
+    border-color: #b3d9ff; /* Slightly darker border */
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1); /* Blueish shadow */
+}
+
+.comparison-single-graph {
+    border: 1px solid #d0e9f7; /* Lighter border for individual graphs */
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f0faff; /* Very light blue background */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px; /* Space between graphs when stacked */
+}
+
+.comparison-single-graph:last-child {
+    margin-bottom: 0; /* No margin after the last graph */
+}
+
+.comparison-single-graph h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #007bff;
+    font-size: 1.15em;
+}
+
+
+/* --- Estilos para IMPRESIÓN --- */
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        font-size: 10pt; /* Tamaño de fuente más pequeño para impresión */
+        color: black;
     }
 
-    return ((5 * betterEarSum) + (1 * worseEarSum)) / 6;
-}
-
-// Get percentage from lookup table with linear interpolation
-function getPercentageDisability(binauralLoss) {
-    const keys = Object.keys(PERCENTAGE_DISABILITY_TABLE).map(Number).sort((a, b) => a - b);
-    let percentage = 0;
-
-    for (let i = 0; i < keys.length; i++) {
-        if (binauralLoss === keys[i]) {
-            percentage = PERCENTAGE_DISABILITY_TABLE[keys[i]];
-            break;
-        } else if (binauralLoss < keys[i]) {
-            if (i === 0) { // If less than the first key, use the first percentage
-                percentage = PERCENTAGE_DISABILITY_TABLE[keys[0]];
-            } else {
-                const lowerKey = keys[i - 1];
-                const upperKey = keys[i];
-                const lowerVal = PERCENTAGE_DISABILITY_TABLE[lowerKey];
-                const upperVal = PERCENTAGE_DISABILITY_TABLE[upperKey];
-
-                if (upperKey - lowerKey === 0) { // Avoid division by zero
-                    percentage = lowerVal;
-                } else {
-                    percentage = lowerVal + (binauralLoss - lowerKey) * (upperVal - lowerVal) / (upperKey - lowerKey);
-                }
-            }
-            break;
-        } else if (i === keys.length - 1) { // If greater than the last key, use the last percentage
-            percentage = PERCENTAGE_DISABILITY_TABLE[keys[i]];
-        }
+    .container {
+        box-shadow: none;
+        padding: 10mm;
+        margin: 0;
+        border-radius: 0;
     }
-    return parseFloat(percentage.toFixed(2)); // Round to 2 decimal places
-}
 
-
-// Generic lookup function for severity/recommendation tables (finds the highest threshold met)
-function getDescriptor(value, table) {
-    let description = "Valor no especificado"; // Default if no match
-    // Ensure table is sorted by threshold ascending
-    const sortedTable = [...table].sort((a, b) => a.threshold - b.threshold);
-
-    for (const item of sortedTable) {
-        if (value >= item.threshold) {
-            description = item.description;
-        } else {
-            // Since the table is sorted, if value is less than current threshold,
-            // it means it's less than all subsequent thresholds as well.
-            break;
-        }
+    /* Ocultar elementos no deseados en la impresión */
+    .patient-info-section .input-group,
+    .button-group,
+    .input-section,
+    select#saved-audiometries,
+    .comparison-section,
+    .section-card { /* Hide section cards default style as well */
+        display: none !important;
     }
-    return description;
-}
+    /* Show print-specific info */
+    .print-info {
+        display: block !important;
+        margin-bottom: 20px;
+        font-size: 11pt;
+        text-align: left;
+    }
+    .print-info p {
+        margin: 5px 0;
+    }
 
 
-// Main calculation and display function
-function calculateAndDisplay() {
-    const thresholds = getThresholds();
+    h1 {
+        display: block;
+        text-align: center;
+        color: #000;
+        margin-bottom: 20px;
+        font-size: 18pt;
+    }
 
-    const sumOD = calculateMonoauralLoss(thresholds.va.od);
-    const sumOI = calculateMonoauralLoss(thresholds.va.oi);
+    h2, h3 {
+        color: #000;
+        font-size: 14pt;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
 
-    const binauralLoss = calculateBinauralLoss(sumOD, sumOI);
-    const percentageDisability = getPercentageDisability(binauralLoss);
+    /* Layout para tabla y gráfica en impresión */
+    .audiometry-summary-print {
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
 
-    // Calculate individual ear percentages for the basic report
-    const percentageOD = getPercentageDisability(sumOD); // Use the same table for monoaural sum
-    const percentageOI = getPercentageDisability(sumOI); // Use the same table for monoaural sum
+    .audiometry-summary-print #audiometry-table-print,
+    .audiometry-summary-print #audiogram-container-print {
+        width: 48%;
+        margin: 1%;
+        box-sizing: border-box;
+    }
 
-    displayResultsTable(thresholds, sumOD, sumOI);
-    generateBasicReport(sumOD, sumOI, percentageOD, percentageOI, binauralLoss, percentageDisability);
-    generateDetailedReport(thresholds, sumOD, sumOI, binauralLoss, percentageDisability);
-}
+    .audiometry-summary-print #audiometry-table-print table {
+        width: 100%;
+        min-width: unset; /* Remove min-width for print */
+    }
 
-function displayResultsTable(thresholds, sumOD, sumOI) {
-    const tableBody = document.querySelector('#audiometry-table tbody');
-    tableBody.innerHTML = ''; // Clear previous results
-
-    // Right Ear - Via Aérea
-    let rowOD_VA = `<tr><td>Oído Derecho (Vía Aérea)</td>`;
-    FREQUENCIES.forEach(freq => {
-        rowOD_VA += `<td>${thresholds.va.od[freq]}</td>`;
-    });
-    rowOD_VA += `<td>${sumOD}</td></tr>`;
-    tableBody.innerHTML += rowOD_VA;
-
-    // Right Ear - Via Ósea
-    let rowOD_VO = `<tr><td>Oído Derecho (Vía Ósea)</td>`;
-    FREQUENCIES.forEach(freq => {
-        rowOD_VO += `<td>${thresholds.vo.od[freq]}</td>`;
-    });
-    rowOD_VO += `<td></td></tr>`; // No sum for bone conduction in this table context
-    tableBody.innerHTML += rowOD_VO;
-
-    // Left Ear - Via Aérea
-    let rowOI_VA = `<tr><td>Oído Izquierdo (Vía Aérea)</td>`;
-    FREQUENCIES.forEach(freq => {
-        rowOI_VA += `<td>${thresholds.va.oi[freq]}</td>`;
-    });
-    rowOI_VA += `<td>${sumOI}</td></tr>`;
-    tableBody.innerHTML += rowOI_VA;
-
-    // Left Ear - Via Ósea
-    let rowOI_VO = `<tr><td>Oído Izquierdo (Vía Ósea)</td>`;
-    FREQUENCIES.forEach(freq => {
-        rowOI_VO += `<td>${thresholds.vo.oi[freq]}</td>`;
-    });
-    rowOI_VO += `<td></td></tr>`; // No sum for bone conduction in this table context
-    tableBody.innerHTML += rowOI_VO;
-}
-
-// Updated generateBasicReport to include individual ear percentages and corrected orthography
-function generateBasicReport(sumOD, sumOI, percentageOD, percentageOI, binauralLoss, percentageDisability) {
-    const reportContentDiv = document.getElementById('basic-report-content');
-    let reportText = `          Informe de la medida de la pérdida auditiva
-según Real Decreto 1971/1999 de 23 de diciembre,
-de Procedimiento para el Reconocimiento, Declaración
-y Calificación del Grado de Minusvalía (BOE de 26 de
-enero y 13 de marzo de 2000). Anexo 1ª, Capítulo 13.
-BOE de 16 de Enero de 2000: SS - 1104/78- 81.
-
-    La pérdida MONOAURAL obtenida por el sumatorio
-de los umbrales de vía aérea de las cuatro frecuencias
-conversacionales (500, 1000, 2000 y 3000 Hz),
-en la audiometría tonal liminar en cada oído.
-
-Oído Dcho. sumatorio: ${sumOD}  (Pérdida OD: ${percentageOD.toFixed(2)}%)
-Oído Izq. sumatorio: ${sumOI}  (Pérdida OI: ${percentageOI.toFixed(2)}%)
-
-    El cálculo de PÉRDIDA BINAURAL es el siguiente:
-PB = Pérdida Binaural / E MO = sumatoria del mejor oído /
-E PO = sumatoria del peor oído. Así la pérdida binaural
-NO es la media aritmética de ambos oídos, sino la media
-ponderada consistente en: 5 veces la suma de las 4
-frecuencias en el oído más sano + 1 vez la suma de las
-4 frecuencias en el oído peor, todo ello dividido entre 6.
-
-    Aplicando esta fórmula,
-PÉRDIDA AUDITIVA BINAURAL ponderada entre los dos oídos es de ${binauralLoss.toFixed(2)} dB, con un porcentaje de discapacidad del ${percentageDisability.toFixed(2)}%.`;
-
-    reportContentDiv.textContent = reportText;
-}
-
-// No changes to detailed report expected, but included for completeness and orthography review.
-function generateDetailedReport(thresholds, sumOD, sumOI, binauralLoss, percentageDisability) {
-    const reportContentDiv = document.getElementById('detailed-report-content');
-    let reportText = `--- Interpretación Detallada ---\n\n`;
-
-    // Hearing Loss Severity (based on average of conversational frequencies)
-    const getConversationalAverage = (earThresholds) => {
-        let sum = 0;
-        CONVERSATIONAL_FREQUENCIES.forEach(freq => {
-            sum += earThresholds[freq];
-        });
-        return sum / CONVERSATIONAL_FREQUENCIES.length;
-    };
-
-    const avgOD_VA = getConversationalAverage(thresholds.va.od);
-    const avgOI_VA = getConversationalAverage(thresholds.va.oi);
-
-    reportText += `Diagnóstico de Pérdida Auditiva (Vía Aérea):\n`;
-    reportText += `  Oído Derecho: ${getDescriptor(avgOD_VA, HEARING_LOSS_SEVERITY_TABLE)}\n`;
-    reportText += `  Oído Izquierdo: ${getDescriptor(avgOI_VA, HEARING_LOSS_SEVERITY_TABLE)}\n\n`;
-
-    // Transmission Loss (Air-Bone Gap)
-    const getTransmissionResult = (vaValue, voValue) => {
-        const diff = vaValue - voValue;
-        return getDescriptor(diff, TRANSMISSION_LOSS_TABLE);
-    };
-
-    reportText += `Componente de Transmisión:\n`;
-    reportText += `  Oído Derecho:\n`;
-    FREQUENCIES.forEach(freq => {
-        reportText += `    ${freq} Hz: ${getTransmissionResult(thresholds.va.od[freq], thresholds.vo.od[freq])}\n`;
-    });
-    reportText += `  Oído Izquierdo:\n`;
-    FREQUENCIES.forEach(freq => {
-        reportText += `    ${freq} Hz: ${getTransmissionResult(thresholds.va.oi[freq], thresholds.vo.oi[freq])}\n`;
-    });
-    reportText += `\n`;
-
-    // Asymmetry
-    const getAsymmetryResult = (freq) => {
-        const diff = Math.abs(thresholds.va.od[freq] - thresholds.va.oi[freq]);
-        return getDescriptor(diff, ASYMMETRY_TABLE);
-    };
-
-    const getHighFreqAsymmetryResult = () => {
-        let sumDiffHighFreq = 0;
-        HIGH_FREQUENCIES.forEach(freq => {
-            sumDiffHighFreq += Math.abs(thresholds.va.od[freq] - thresholds.va.oi[freq]);
-        });
-        const avgDiffHighFreq = sumDiffHighFreq / HIGH_FREQUENCIES.length;
-        return getDescriptor(avgDiffHighFreq, ASYMMETRY_HIGH_FREQ_TABLE);
-    };
-
-    reportText += `Asimetría entre Oídos (Vía Aérea):\n`;
-    CONVERSATIONAL_FREQUENCIES.forEach(freq => {
-        reportText += `  ${freq} Hz: ${getAsymmetryResult(freq)}\n`;
-    });
-    reportText += `  Asimetría en tonos agudos (promedio 3k, 4k, 8k Hz): ${getHighFreqAsymmetryResult()}\n\n`;
-
-    // Audioprosthesis Recommendation
-    reportText += `Recomendación de Audioprótesis: ${getDescriptor(percentageDisability, AUDIOPROSTHESIS_TABLE)}\n`;
+    .audiometry-summary-print #audiogram-container-print {
+        height: 350px; /* Fixed height for consistency in print */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        background-color: #fff;
+    }
+    /* Ensure SVG fills its container in print */
+    .audiometry-summary-print #audiogram-container-print svg {
+        width: 100%;
+        height: 100%;
+    }
 
 
-    reportContentDiv.textContent = reportText;
-}
+    /* Ajustes específicos para la tabla en impresión */
+    table, th, td {
+        border-color: #999;
+    }
+    th {
+        background-color: #e9e9e9;
+    }
 
-// Copy functions
-function copyTable() {
-    const table = document.getElementById('audiometry-table');
-    const range = document.createRange();
-    range.selectNode(table);
-    window.getSelection().removeAllRanges(); // Clear any current selections
-    window.getSelection().addRange(range); // Select the table
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            alert('Tabla copiada al portapapeles!');
-        } else {
-            throw new Error('Failed to copy using execCommand');
-        }
-    } catch (err) {
-        console.error('Error al copiar la tabla: ', err);
-        alert('No se pudo copiar la tabla. Por favor, seleccione y copie manualmente.');
-    } finally {
-        window.getSelection().removeAllRanges(); // Deselect
+    /* Ajustes para informes en impresión */
+    .report-section {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 15px;
+        background-color: #fff;
+        box-shadow: none;
     }
 }
 
-async function copyBasicReport() {
-    const reportContent = document.getElementById('basic-report-content');
-    try {
-        await navigator.clipboard.writeText(reportContent.textContent);
-        alert('Informe Básico copiado al portapapeles!');
-    } catch (err) {
-        console.error('Error al copiar el informe básico: ', err);
-        alert('No se pudo copiar el informe básico. Por favor, seleccione y copie manualmente.');
+/* --- Responsive Adjustments --- */
+
+/* For screens smaller than 768px (common tablet portrait / mobile landscape) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        font-size: 0.95em;
+    }
+
+    .container {
+        padding: 15px;
+        margin: 10px auto;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    h3 {
+        font-size: 1.1em;
+    }
+
+    .input-group {
+        flex-direction: column; /* Stack input items vertically */
+        gap: 15px;
+    }
+
+    .input-item {
+        width: 100%; /* Full width for input items */
+        align-items: center; /* Center labels and inputs */
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
+        width: 90%; /* Adjust width for better fit on small screens */
+        max-width: 300px; /* Prevent inputs from becoming too wide */
+    }
+
+    .button-group {
+        flex-direction: column; /* Stack buttons vertically */
+    }
+
+    button {
+        width: 90%; /* Full width for buttons */
+        margin: 8px auto;
+    }
+
+    .input-grid-wrapper, .table-responsive-wrapper {
+        margin-left: -15px; /* Adjust wrapper to content padding */
+        margin-right: -15px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .input-grid {
+        grid-template-columns: auto repeat(7, 80px); /* Slightly larger fixed width for columns */
+        gap: 8px 5px;
+        min-width: 600px; /* Ensure scrolling */
     }
 }
 
-async function copyDetailedReport() {
-    const reportContent = document.getElementById('detailed-report-content');
-    try {
-        await navigator.clipboard.writeText(reportContent.textContent);
-        alert('Informe Detallado copiado al portapapeles!');
-    } catch (err) {
-        console.error('Error al copiar el informe detallado: ', err);
-        alert('No se pudo copiar el informe detallado. Por favor, seleccione y copie manualmente.');
+/* For screens smaller than 480px (typical mobile portrait) */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+        font-size: 0.9em;
+    }
+
+    .container {
+        padding: 10px;
+        margin: 5px auto;
+        border-radius: 8px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+    h2 {
+        font-size: 1.3em;
+    }
+    h3 {
+        font-size: 1.05em;
+    }
+
+    .section-card {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .input-grid {
+        gap: 5px 3px;
+        min-width: 500px; /* Even smaller min-width, relying more on scroll */
+        padding: 10px;
+    }
+    .input-grid label {
+        padding-right: 5px;
+    }
+    .input-grid input[type="number"] {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    .report-section {
+        padding: 15px;
+        font-size: 0.88em;
+    }
+
+    .audiogram-section {
+        padding: 10px;
     }
 }
-
-// Initial setup when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    setupAutoUpdate();
-    calculateAndDisplay(); // Display initial values based on default inputs
-});
