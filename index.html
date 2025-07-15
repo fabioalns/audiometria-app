@@ -3,92 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicación de Audiometría</title>
+    <title>Audiometria-app</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Análisis de Audiometría</h1>
+        <h1>Audiometria-app</h1>
 
-        <section class="input-section">
-            <h2>Introducir Umbrales Auditivos (dB)</h2>
-            <div class="ear-section">
-                <h3>Oído Derecho</h3>
-                <div class="frequency-row header-row">
-                    <label>Frecuencia (Hz)</label>
-                    <span>250</span>
-                    <span>500</span>
-                    <span>1000</span>
-                    <span>2000</span>
-                    <span>3000</span>
-                    <span>4000</span>
-                    <span>8000</span>
+        <section class="patient-info-section section-card">
+            <h2>Información del Paciente y Gestión de Datos</h2>
+            <div class="input-group">
+                <div class="input-item">
+                    <label for="history-number">Nº de historia:</label>
+                    <input type="text" id="history-number" value="00000">
                 </div>
-                <div class="frequency-row">
-                    <label for="va-od-250">Vía Aérea (OD)</label>
-                    <input type="number" id="va-od-250" value="20" min="0" max="120" tabindex="1">
-                    <input type="number" id="va-od-500" value="20" min="0" max="120" tabindex="2">
-                    <input type="number" id="va-od-1000" value="20" min="0" max="120" tabindex="3">
-                    <input type="number" id="va-od-2000" value="20" min="0" max="120" tabindex="4">
-                    <input type="number" id="va-od-3000" value="20" min="0" max="120" tabindex="5">
-                    <input type="number" id="va-od-4000" value="20" min="0" max="120" tabindex="6">
-                    <input type="number" id="va-od-8000" value="20" min="0" max="120" tabindex="7">
-                </div>
-                <div class="frequency-row">
-                    <label for="vo-od-250">Vía Ósea (OD)</label>
-                    <input type="number" id="vo-od-250" value="20" min="0" max="120" tabindex="8">
-                    <input type="number" id="vo-od-500" value="20" min="0" max="120" tabindex="9">
-                    <input type="number" id="vo-od-1000" value="20" min="0" max="120" tabindex="10">
-                    <input type="number" id="vo-od-2000" value="20" min="0" max="120" tabindex="11">
-                    <input type="number" id="vo-od-3000" value="20" min="0" max="120" tabindex="12">
-                    <input type="number" id="vo-od-4000" value="20" min="0" max="120" tabindex="13">
-                    <input type="number" id="vo-od-8000" value="20" min="0" max="120" tabindex="14">
+                <div class="input-item">
+                    <label for="audiometry-date">Fecha de Audiometría:</label>
+                    <input type="date" id="audiometry-date" value="">
                 </div>
             </div>
-
-            <div class="ear-section">
-                <h3>Oído Izquierdo</h3>
-                <div class="frequency-row header-row">
-                    <label>Frecuencia (Hz)</label>
-                    <span>250</span>
-                    <span>500</span>
-                    <span>1000</span>
-                    <span>2000</span>
-                    <span>3000</span>
-                    <span>4000</span>
-                    <span>8000</span>
-                </div>
-                <div class="frequency-row">
-                    <label for="va-oi-250">Vía Aérea (OI)</label>
-                    <input type="number" id="va-oi-250" value="20" min="0" max="120" tabindex="15">
-                    <input type="number" id="va-oi-500" value="20" min="0" max="120" tabindex="16">
-                    <input type="number" id="va-oi-1000" value="20" min="0" max="120" tabindex="17">
-                    <input type="number" id="va-oi-2000" value="20" min="0" max="120" tabindex="18">
-                    <input type="number" id="va-oi-3000" value="20" min="0" max="120" tabindex="19">
-                    <input type="number" id="va-oi-4000" value="20" min="0" max="120" tabindex="20">
-                    <input type="number" id="va-oi-8000" value="20" min="0" max="120" tabindex="21">
-                </div>
-                <div class="frequency-row">
-                    <label for="vo-oi-250">Vía Ósea (OI)</label>
-                    <input type="number" id="vo-oi-250" value="20" min="0" max="120" tabindex="22">
-                    <input type="number" id="vo-oi-500" value="20" min="0" max="120" tabindex="23">
-                    <input type="number" id="vo-oi-1000" value="20" min="0" max="120" tabindex="24">
-                    <input type="number" id="vo-oi-2000" value="20" min="0" max="120" tabindex="25">
-                    <input type="number" id="vo-oi-3000" value="20" min="0" max="120" tabindex="26">
-                    <input type="number" id="vo-oi-4000" value="20" min="0" max="120" tabindex="27">
-                    <input type="number" id="vo-oi-8000" value="20" min="0" max="120" tabindex="28">
-                </div>
+            <div class="button-group">
+                <button onclick="saveAudiometry()">Guardar Audiometría</button>
+                <button onclick="loadAudiometry()">Cargar Audiometría</button>
+                <select id="saved-audiometries" onchange="loadSelectedAudiometry()"></select>
+                <button onclick="resetApplication()">Reiniciar Aplicación</button>
             </div>
-            <button onclick="calculateAndDisplay()">Calcular Resultados</button>
         </section>
 
-        <section class="results-section">
-            <h2>Tabla de Resultados</h2>
-            <div id="results-table-container">
-                <table id="audiometry-table">
+        <section class="input-section section-card">
+            <h2>Introducir Umbrales Auditivos (dB HL)</h2>
+            <div class="input-grid-wrapper"> <div class="input-grid">
+                    <h3>Oído Derecho</h3>
+                    <div class="freq-labels">
+                        <label></label>
+                        <label>250 Hz</label>
+                        <label>500 Hz</label>
+                        <label>1000 Hz</label>
+                        <label>2000 Hz</label>
+                        <label>3000 Hz</label>
+                        <label>4000 Hz</label>
+                        <label>8000 Hz</label>
+                    </div>
+
+                    <div class="input-row">
+                        <label>Vía Aérea (VA)</label>
+                        <input type="number" id="va-od-250" min="-10" max="120" value="0">
+                        <input type="number" id="va-od-500" min="-10" max="120" value="0">
+                        <input type="number" id="va-od-1000" min="-10" max="120" value="0">
+                        <input type="number" id="va-od-2000" min="-10" max="120" value="0">
+                        <input type="number" id="va-od-3000" min="-10" max="120" value="0">
+                        <input type="number" id="va-od-4000" min="-10" max="120" value="0">
+                        <input type="number" id="va-od-8000" min="-10" max="120" value="0">
+                    </div>
+
+                    <div class="input-row">
+                        <label>Vía Ósea (VO)</label>
+                        <input type="number" id="vo-od-250" min="-10" max="120" value="0">
+                        <input type="number" id="vo-od-500" min="-10" max="120" value="0">
+                        <input type="number" id="vo-od-1000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-od-2000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-od-3000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-od-4000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-od-8000" min="-10" max="120" value="0">
+                    </div>
+
+                    <h3>Oído Izquierdo</h3>
+                    <div class="freq-labels">
+                        <label></label>
+                        <label>250 Hz</label>
+                        <label>500 Hz</label>
+                        <label>1000 Hz</label>
+                        <label>2000 Hz</label>
+                        <label>3000 Hz</label>
+                        <label>4000 Hz</label>
+                        <label>8000 Hz</label>
+                    </div>
+                    <div class="input-row">
+                        <label>Vía Aérea (VA)</label>
+                        <input type="number" id="va-oi-250" min="-10" max="120" value="0">
+                        <input type="number" id="va-oi-500" min="-10" max="120" value="0">
+                        <input type="number" id="va-oi-1000" min="-10" max="120" value="0">
+                        <input type="number" id="va-oi-2000" min="-10" max="120" value="0">
+                        <input type="number" id="va-oi-3000" min="-10" max="120" value="0">
+                        <input type="number" id="va-oi-4000" min="-10" max="120" value="0">
+                        <input type="number" id="va-oi-8000" min="-10" max="120" value="0">
+                    </div>
+
+                    <div class="input-row">
+                        <label>Vía Ósea (VO)</label>
+                        <input type="number" id="vo-oi-250" min="-10" max="120" value="0">
+                        <input type="number" id="vo-oi-500" min="-10" max="120" value="0">
+                        <input type="number" id="vo-oi-1000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-oi-2000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-oi-3000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-oi-4000" min="-10" max="120" value="0">
+                        <input type="number" id="vo-oi-8000" min="-10" max="120" value="0">
+                    </div>
+                </div>
+            </div> <div class="button-group">
+                <button onclick="calculateAndDisplay()">Calcular Resultados</button>
+            </div>
+        </section>
+
+        <section class="results-section section-card">
+            <h2>Tabla de Resultados de Audiometría</h2>
+            <div class="table-responsive-wrapper"> <table id="audiometry-table">
                     <thead>
                         <tr>
-                            <th></th>
+                            <th>Oído / Frecuencia</th>
                             <th>250 Hz</th>
                             <th>500 Hz</th>
                             <th>1000 Hz</th>
@@ -96,29 +118,79 @@
                             <th>3000 Hz</th>
                             <th>4000 Hz</th>
                             <th>8000 Hz</th>
-                            <th>Sumatorio (500-3000 Hz)</th>
+                            <th>Sumatorio</th>
                         </tr>
                     </thead>
                     <tbody>
                         </tbody>
                 </table>
+            </div> <div class="button-group">
+                <button onclick="copyTable()">Copiar Tabla</button>
             </div>
-            <button onclick="copyTable()">Copiar Tabla</button>
         </section>
 
-        <section class="report-section">
-            <h2>Informe de la Medida de la Pérdida Auditiva (Básico)</h2>
+        <section class="audiogram-section section-card">
+            <h2>Audiograma</h2>
+            <div id="audiogram-container">
+                </div>
+        </section>
+
+        <section class="report-section section-card">
+            <h2>Informe Básico</h2>
             <div id="basic-report-content">
                 </div>
-            <button onclick="copyBasicReport()">Copiar Informe Básico</button>
+            <div class="button-group">
+                <button onclick="copyBasicReport()">Copiar Informe Básico</button>
+            </div>
         </section>
 
-        <section class="report-section">
-            <h2>Interpretación Detallada de la Audiometría</h2>
+        <section class="report-section section-card">
+            <h2>Informe Detallado</h2>
             <div id="detailed-report-content">
                 </div>
-            <button onclick="copyDetailedReport()">Copiar Informe Detallado</button>
+            <div class="button-group">
+                <button onclick="copyDetailedReport()">Copiar Informe Detallado</button>
+            </div>
         </section>
+
+        <div class="button-group">
+            <button onclick="printAudiometry()">Imprimir Audiometría</button>
+        </div>
+
+        <section class="comparison-section section-card">
+            <h2>Comparación de Audiometrías</h2>
+            <div class="input-group">
+                <div class="input-item">
+                    <label for="select-audiometry-compare-1">Audiometría 1 (Basal):</label>
+                    <select id="select-audiometry-compare-1"></select>
+                </div>
+                <div class="input-item">
+                    <label for="select-audiometry-compare-2">Audiometría 2 (Seguimiento):</label>
+                    <select id="select-audiometry-compare-2"></select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="compareAudiometries()">Comparar Audiometrías</button>
+            </div>
+
+            <div class="comparison-graphs-container">
+                <div class="comparison-single-graph">
+                    <h3>Audiometría 1 (Basal)</h3>
+                    <div id="comparison-audiogram-1-container" class="audiogram-section">
+                        </div>
+                </div>
+                <div class="comparison-single-graph">
+                    <h3>Audiometría 2 (Seguimiento)</h3>
+                    <div id="comparison-audiogram-2-container" class="audiogram-section">
+                        </div>
+                </div>
+            </div>
+
+            <h3>Informe de Comparación</h3>
+            <div id="comparison-report-content" class="report-section">
+                </div>
+        </section>
+
     </div>
 
     <script src="script.js"></script>
