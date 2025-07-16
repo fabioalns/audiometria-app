@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audiometría - Valoración Auditiva</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text x='0' y='14'>👂</text></svg>" type="image/svg+xml">
+</head>
+<body>
+    <div class="container">
+        <h1>Audiometría-app</h1>
+
+        <section class="section-card patient-info-section">
+            <h2>Datos del Paciente</h2>
+            <div class="input-group">
+                <div class="input-item">
+                    <label for="history-number">Nº de Historia:</label>
+                    <input type="text" id="history-number" value="00000" placeholder="Ej. 12345">
+                </div>
+                <div class="input-item">
+                    <label for="audiometry-date">Fecha de Audiometría:</label>
+                    <input type="date" id="audiometry-date">
+                </div>
+                <div class="input-item">
+                    <label for="saved-audiometries">Cargar Audiometría Guardada:</label>
+                    <select id="saved-audiometries" onchange="loadSelectedAudiometry()">
+                        <option value="">Seleccionar Audiometría Guardada</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="saveAudiometry()">Guardar Audiometría</button>
+                <button onclick="resetApplication()">Reiniciar Aplicación</button>
+            </div>
+        </section>
+
+        <section class="section-card input-section">
+            <h2>Umbrales Auditivos (dB HL)</h2>
+            <div class="input-grid-wrapper">
+                <div class="input-grid">
+                    <label></label> <label>250Hz</label>
+                    <label>500Hz</label>
+                    <label>1000Hz</label>
+                    <label>2000Hz</label>
+                    <label>3000Hz</label>
+                    <label>4000Hz</label>
+                    <label>8000Hz</label>
+
+                    <div class="input-row">
+                        <label>OD VA:</label>
+                        <input type="number" id="va-od-250" value="0">
+                        <input type="number" id="va-od-500" value="0">
+                        <input type="number" id="va-od-1000" value="0">
+                        <input type="number" id="va-od-2000" value="0">
+                        <input type="number" id="va-od-3000" value="0">
+                        <input type="number" id="va-od-4000" value="0">
+                        <input type="number" id="va-od-8000" value="0">
+                    </div>
+                    <div class="input-row">
+                        <label>OD VO:</label>
+                        <input type="number" id="vo-od-250" value="0">
+                        <input type="number" id="vo-od-500" value="0">
+                        <input type="number" id="vo-od-1000" value="0">
+                        <input type="number" id="vo-od-2000" value="0">
+                        <input type="number" id="vo-od-3000" value="0">
+                        <input type="number" id="vo-od-4000" value="0">
+                        <input type="number" id="vo-od-8000" value="0">
+                    </div>
+
+                    <div class="input-row">
+                        <label>OI VA:</label>
+                        <input type="number" id="va-oi-250" value="0">
+                        <input type="number" id="va-oi-500" value="0">
+                        <input type="number" id="va-oi-1000" value="0">
+                        <input type="number" id="va-oi-2000" value="0">
+                        <input type="number" id="va-oi-3000" value="0">
+                        <input type="number" id="va-oi-4000" value="0">
+                        <input type="number" id="va-oi-8000" value="0">
+                    </div>
+                    <div class="input-row">
+                        <label>OI VO:</label>
+                        <input type="number" id="vo-oi-250" value="0">
+                        <input type="number" id="vo-oi-500" value="0">
+                        <input type="number" id="vo-oi-1000" value="0">
+                        <input type="number" id="vo-oi-2000" value="0">
+                        <input type="number" id="vo-oi-3000" value="0">
+                        <input type="number" id="vo-oi-4000" value="0">
+                        <input type="number" id="vo-oi-8000" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="calculateAndDisplay()">Calcular Resultados</button>
+            </div>
+        </section>
+
+        <section class="section-card results-section">
+            <h2>Resultados de Audiometría</h2>
+            <div class="table-responsive-wrapper">
+                <table id="audiometry-table">
+                    <thead>
+                        <tr>
+                            <th>Oído / Vía</th>
+                            <th>250Hz</th>
+                            <th>500Hz</th>
+                            <th>1000Hz</th>
+                            <th>2000Hz</th>
+                            <th>3000Hz</th>
+                            <th>4000Hz</th>
+                            <th>8000Hz</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            <div class="button-group">
+                <button onclick="copyTable()">Copiar Tabla</button>
+            </div>
+        </section>
+
+        <section class="section-card audiogram-section">
+            <h2>Audiograma</h2>
+            <div id="audiogram-container">
+                <p>El audiograma se generará aquí tras calcular los resultados.</p>
+            </div>
+        </section>
+
+        <section class="section-card report-section">
+            <h2>Informe Básico</h2>
+            <div id="basic-report-content">
+                <p>El informe básico se generará aquí tras calcular los resultados.</p>
+            </div>
+            <div class="button-group">
+                <button onclick="copyBasicReport()">Copiar Informe Básico</button>
+            </div>
+        </section>
+
+        <section class="section-card report-section">
+            <h2>Informe Detallado</h2>
+            <div id="detailed-report-content">
+                <p>El informe detallado se generará aquí tras calcular los resultados.</p>
+            </div>
+            <div class="button-group">
+                <button onclick="copyDetailedReport()">Copiar Informe Detallado</button>
+                <button onclick="printAudiometry()">Imprimir Informe Completo</button>
+            </div>
+        </section>
+
+        <section class="section-card comparison-section">
+            <h2>Comparación de Audiometrías</h2>
+            <div class="input-group">
+                <div class="input-item">
+                    <label for="select-audiometry-compare-1">Audiometría Basal:</label>
+                    <select id="select-audiometry-compare-1">
+                        <option value="">Seleccionar Audiometría Basal</option>
+                    </select>
+                </div>
+                <div class="input-item">
+                    <label for="select-audiometry-compare-2">Audiometría de Seguimiento:</label>
+                    <select id="select-audiometry-compare-2">
+                        <option value="">Seleccionar Audiometría de Seguimiento</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="compareAudiometries()">Comparar</button>
+            </div>
+
+            <div class="comparison-graphs-container">
+                <div class="comparison-single-graph">
+                    <h3>Audiometría Basal</h3>
+                    <div id="comparison-audiogram-1-container">
+                        <p>Audiograma de la primera audiometría.</p>
+                    </div>
+                </div>
+                <div class="comparison-single-graph">
+                    <h3>Audiometría de Seguimiento</h3>
+                    <div id="comparison-audiogram-2-container">
+                        <p>Audiograma de la segunda audiometría.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3>Informe de Comparación</h3>
+                <div id="comparison-report-content">
+                    <p>El informe de comparación se generará aquí.</p>
+                </div>
+                <div class="button-group">
+                    <button onclick="copyComparisonReport()">Copiar Informe Comparativo</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

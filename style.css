@@ -1,0 +1,541 @@
+/* General styles for body and container */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5; /* Light grey background */
+    color: #333;
+    line-height: 1.6;
+    box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+/* Alineación de títulos al centro */
+h1, h2, h3 {
+    color: #0056b3;
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #004085;
+}
+
+h2 {
+    font-size: 1.8em;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 1.3em;
+    color: #007bff;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+/* Section styling - 'section-card' for consistent look */
+.section-card {
+    background-color: #f9fbfd; /* Very light blue/grey for sections */
+    border: 1px solid #e3e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Lighter shadow for sections */
+}
+
+/* Input styles */
+.input-group {
+    display: flex;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+    justify-content: center;
+    gap: 25px; /* Spacing between input items */
+    margin-bottom: 20px;
+}
+
+.input-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.input-item label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+    font-size: 0.95em;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    -moz-appearance: textfield; /* Hide arrows in Firefox for number inputs */
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Hide arrows in Chrome/Safari for number inputs */
+    margin: 0;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+select {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+
+/* Specific styles for audiometry input grid */
+.input-grid-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling for the grid */
+    margin-bottom: 20px;
+    padding-bottom: 10px; /* Space for scrollbar */
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: auto repeat(7, minmax(70px, 1fr)); /* Auto for label, then 7 flexible columns with min width */
+    gap: 12px 10px; /* Row gap, Column gap */
+    align-items: center;
+    min-width: 700px; /* Minimum width to ensure scrolling on small screens */
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.input-grid h3 {
+    grid-column: 1 / -1; /* Span across all columns */
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    color: #007bff;
+    font-size: 1.2em;
+}
+
+.freq-labels {
+    display: contents; /* Makes children participate in parent grid */
+}
+
+.freq-labels label {
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #444;
+}
+
+.input-row {
+    display: contents; /* Makes children participate in parent grid */
+}
+
+.input-row label {
+    text-align: right;
+    padding-right: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+.input-grid input[type="number"] {
+    width: 100%; /* Fill grid cell */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+
+/* Button styles */
+.button-group {
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.05em;
+    margin: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px); /* Slight lift effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styles */
+.table-responsive-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling for the table */
+    margin-bottom: 20px;
+    padding-bottom: 10px; /* Space for scrollbar */
+}
+
+table {
+    width: 100%;
+    min-width: 700px; /* Minimum width for table to ensure scrolling */
+    border-collapse: collapse;
+    margin-bottom: 5px;
+    background-color: #fff;
+    border-radius: 8px; /* Rounded corners for the table */
+    overflow: hidden; /* Ensures rounded corners apply to content */
+}
+
+table, th, td {
+    border: 1px solid #e0e0e0;
+}
+
+th, td {
+    padding: 12px 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #eef5fc; /* Light blue background for headers */
+    font-weight: bold;
+    color: #333;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #f7fafd; /* Light stripe for rows */
+}
+
+tbody tr:hover {
+    background-color: #eef5fc; /* Highlight on hover */
+}
+
+
+/* Report sections */
+.report-section {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #e3e8ed;
+    border-radius: 8px;
+    background-color: #f9fbfd;
+    white-space: pre-wrap; /* Preserve formatting for reports */
+    font-family: 'Consolas', 'Courier New', monospace; /* Monospaced font for reports */
+    font-size: 0.95em;
+    color: #444;
+    line-height: 1.4; /* Improved line spacing for readability */
+}
+
+/* Audiogram specific styles */
+.audiogram-section {
+    margin-top: 20px;
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #e3e8ed;
+    border-radius: 8px;
+    background-color: #fff; /* Ensure white background for SVG */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+#audiogram-svg, .comparison-single-graph svg {
+    overflow: visible; /* Allows symbols to go slightly outside viewBox if needed */
+    background-color: #fff;
+    max-width: 100%; /* Make SVG responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* --- Comparison Section Styles --- */
+.comparison-section {
+    background-color: #e6f7ff; /* Light blue background for distinction */
+    border-color: #b3d9ff; /* Slightly darker border */
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1); /* Blueish shadow */
+}
+
+.comparison-single-graph {
+    border: 1px solid #d0e9f7; /* Lighter border for individual graphs */
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f0faff; /* Very light blue background */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px; /* Space between graphs when stacked */
+}
+
+.comparison-single-graph:last-child {
+    margin-bottom: 0; /* No margin after the last graph */
+}
+
+.comparison-graphs-container {
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+    justify-content: center;
+    gap: 20px; /* Space between the two graph containers */
+    margin-top: 20px;
+}
+
+.comparison-graphs-container .comparison-single-graph {
+    flex: 1 1 45%; /* Allow flex items to grow/shrink, with a base of 45% width */
+    min-width: 300px; /* Minimum width before wrapping */
+}
+
+/* --- Estilos para IMPRESIÓN --- */
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        font-size: 10pt; /* Tamaño de fuente más pequeño para impresión */
+        color: black;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: 10mm; /* Overall margin for A4 page */
+        margin: 0;
+        border-radius: 0;
+    }
+
+    /* Ocultar elementos no deseados en la impresión */
+    .patient-info-section .input-group,
+    .button-group,
+    .input-section,
+    select#saved-audiometries,
+    .comparison-section { /* Hide section cards default style as well */
+        display: none !important;
+    }
+    /* Show print-specific info */
+    .print-info {
+        display: block !important; /* Managed by JS, ensures visibility */
+        margin-bottom: 20px;
+        font-size: 11pt;
+        text-align: left;
+    }
+    .print-info p {
+        margin: 5px 0;
+    }
+
+
+    h1 {
+        display: block;
+        text-align: center;
+        color: #000;
+        margin-bottom: 20px;
+        font-size: 18pt;
+    }
+
+    h2, h3 {
+        color: #000;
+        font-size: 14pt;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
+
+    /* Layout para tabla y gráfica en impresión */
+    .audiometry-summary-print {
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-start;
+        flex-wrap: nowrap; /* Prevent wrapping in print */
+        margin-bottom: 20px;
+    }
+
+    .audiometry-summary-print #audiometry-table-print,
+    .audiometry-summary-print #audiogram-container-print {
+        width: 49%; /* Slightly less than half to ensure space */
+        margin: 0.5%;
+        box-sizing: border-box;
+    }
+
+    .audiometry-summary-print #audiometry-table-print table {
+        width: 100%;
+        min-width: unset; /* Remove min-width for print */
+    }
+
+    .audiometry-summary-print #audiogram-container-print {
+        height: 350px; /* Fixed height for consistency in print */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        background-color: #fff;
+    }
+    /* Ensure SVG fills its container in print */
+    .audiometry-summary-print #audiogram-container-print svg {
+        width: 100%;
+        height: 100%;
+    }
+
+
+    /* Ajustes específicos para la tabla en impresión */
+    table, th, td {
+        border-color: #999;
+    }
+    th {
+        background-color: #e9e9e9;
+    }
+
+    /* Ajustes para informes en impresión */
+    .report-content-print {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 15px;
+        background-color: #fff;
+        box-shadow: none;
+        font-size: 9pt; /* Smaller font for reports in print */
+    }
+
+    @page {
+        size: A4;
+        margin: 15mm; /* Apply uniform margins for the print page itself */
+    }
+}
+
+/* --- Responsive Adjustments --- */
+
+/* For screens smaller than 768px (common tablet portrait / mobile landscape) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        font-size: 0.95em;
+    }
+
+    .container {
+        padding: 15px;
+        margin: 10px auto;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    h3 {
+        font-size: 1.1em;
+    }
+
+    .input-group {
+        flex-direction: column; /* Stack input items vertically */
+        gap: 15px;
+    }
+
+    .input-item {
+        width: 100%; /* Full width for input items */
+        align-items: center; /* Center labels and inputs */
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
+        width: 90%; /* Adjust width for better fit on small screens */
+        max-width: 300px; /* Prevent inputs from becoming too wide */
+    }
+
+    .button-group {
+        flex-direction: column; /* Stack buttons vertically */
+    }
+
+    button {
+        width: 90%; /* Full width for buttons */
+        margin: 8px auto;
+    }
+
+    .input-grid-wrapper, .table-responsive-wrapper {
+        margin-left: -15px; /* Adjust wrapper to content padding */
+        margin-right: -15px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .input-grid {
+        grid-template-columns: auto repeat(7, 80px); /* Slightly larger fixed width for columns */
+        gap: 8px 5px;
+        min-width: 600px; /* Ensure scrolling */
+    }
+}
+
+/* For screens smaller than 480px (typical mobile portrait) */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+        font-size: 0.9em;
+    }
+
+    .container {
+        padding: 10px;
+        margin: 5px auto;
+        border-radius: 8px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+    h2 {
+        font-size: 1.3em;
+    }
+    h3 {
+        font-size: 1.05em;
+    }
+
+    .section-card {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .input-grid {
+        gap: 5px 3px;
+        min-width: 500px; /* Even smaller min-width, relying more on scroll */
+        padding: 10px;
+    }
+    .input-grid label {
+        padding-right: 5px;
+    }
+    .input-grid input[type="number"] {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    .report-section {
+        padding: 15px;
+        font-size: 0.88em;
+    }
+
+    .audiogram-section {
+        padding: 10px;
+    }
+    
+    .comparison-graphs-container .comparison-single-graph {
+        flex: 1 1 90%; /* Stack comparison graphs vertically on small screens */
+    }
+}
