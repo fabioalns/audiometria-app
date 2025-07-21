@@ -273,16 +273,16 @@ function drawAudiogram(odVA, odVO, oiVA, oiVO) {
     }
     container.innerHTML = ''; // Clear previous SVG
 
-    const width = 800; // Increased width for better resolution
-    const height = 500; // Increased height for better resolution
-    const padding = 50; // Padding for axes and labels
+    const width = 800;
+    const height = 500;
+    const padding = 50;
 
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("id", "audiogram-svg");
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet"); // Maintain aspect ratio
-    svg.setAttribute("width", "100%"); // Make it responsive
-    svg.setAttribute("height", "auto"); // Make it responsive
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "auto");
 
     // Scales
     const freqs = [250, 500, 1000, 2000, 3000, 4000, 8000];
@@ -293,10 +293,21 @@ function drawAudiogram(odVA, odVO, oiVA, oiVO) {
         return padding + (index / (freqs.length - 1)) * (width - 2 * padding);
     };
 
+    // BUG FIX: Corrected yScale to handle any number, not just multiples of 10.
     const yScale = (db) => {
-        const index = dbLevels.indexOf(db);
-        return padding + (index / (dbLevels.length - 1)) * (height - 2 * padding);
+        const dbMin = -10;
+        const dbMax = 120;
+        const yMin = padding;
+        const yRange = height - 2 * padding;
+
+        // Clamp the db value to be within the expected range to avoid drawing outside the chart
+        const clampedDb = Math.max(dbMin, Math.min(db, dbMax));
+
+        // Linear interpolation to find the y position
+        const percentage = (clampedDb - dbMin) / (dbMax - dbMin);
+        return yMin + percentage * yRange;
     };
+
 
     // Grid lines and labels
     // Horizontal lines (dB HL)
@@ -371,7 +382,7 @@ function drawAudiogram(odVA, odVO, oiVA, oiVO) {
         const points = [];
         freqs.forEach(freq => {
             const value = data[freq];
-            if (!isNaN(value)) {
+            if (value !== undefined && !isNaN(value)) {
                 points.push({ x: xScale(freq), y: yScale(value), freq: freq, value: value });
             }
         });
@@ -422,7 +433,7 @@ function drawAudiogram(odVA, odVO, oiVA, oiVO) {
 
 
     // Legend
-    const legendX = width - padding + 20;
+    const legendX = width - padding - 100; // Adjusted legend position
     const legendY = padding + 20;
     const legendSpacing = 25;
 
@@ -950,9 +961,16 @@ function drawAudiogramComparison(containerElement, odVA, odVO, oiVA, oiVO) {
         return padding + (index / (freqs.length - 1)) * (width - 2 * padding);
     };
 
+    // BUG FIX: Corrected yScale to handle any number, not just multiples of 10.
     const yScale = (db) => {
-        const index = dbLevels.indexOf(db);
-        return padding + (index / (dbLevels.length - 1)) * (height - 2 * padding);
+        const dbMin = -10;
+        const dbMax = 120;
+        const yMin = padding;
+        const yRange = height - 2 * padding;
+
+        const clampedDb = Math.max(dbMin, Math.min(db, dbMax));
+        const percentage = (clampedDb - dbMin) / (dbMax - dbMin);
+        return yMin + percentage * yRange;
     };
 
     // Grid lines and labels (simplified for comparison)
@@ -1008,7 +1026,7 @@ function drawAudiogramComparison(containerElement, odVA, odVO, oiVA, oiVO) {
         const points = [];
         freqs.forEach(freq => {
             const value = data[freq];
-            if (!isNaN(value)) {
+            if (value !== undefined && !isNaN(value)) {
                 points.push({ x: xScale(freq), y: yScale(value), freq: freq, value: value });
             }
         });
