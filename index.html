@@ -6,6 +6,7 @@
     <title>Audiometría Pro - Valoración Auditiva</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text x='0' y='14'>👂</text></svg>" type="image/svg+xml">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <!-- Contenedor para notificaciones Toast -->
@@ -149,9 +150,12 @@
             <div id="audiogram-container">
                 <p>El audiograma se generará aquí tras calcular los resultados.</p>
             </div>
+            <div class="button-group">
+                <button onclick="copyAudiogram()">📋 Copiar Gráfica</button>
+            </div>
         </section>
 
-        <section class="section-card report-section">
+        <section class="section-card report-section" data-report-type="basic">
             <h2>Informe Básico</h2>
             <pre id="basic-report-content" class="report-output">El informe básico se generará aquí.</pre>
             <div class="button-group">
@@ -159,7 +163,7 @@
             </div>
         </section>
 
-        <section class="section-card report-section">
+        <section class="section-card report-section" data-report-type="detailed">
             <h2>Informe Detallado</h2>
             <pre id="detailed-report-content" class="report-output">El informe detallado se generará aquí.</pre>
             <div class="button-group">
@@ -210,5 +214,23 @@
     </div>
 
     <script src="script.js"></script>
+    <!-- Print Modal -->
+    <div id="print-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Seleccionar Contenido a Imprimir</h3>
+            <div class="print-options">
+                <label><input type="checkbox" id="print-patient-info" checked> Datos del Paciente</label>
+                <label><input type="checkbox" id="print-observations" checked> Observaciones</label>
+                <label><input type="checkbox" id="print-results-table" checked> Tabla de Resultados</label>
+                <label><input type="checkbox" id="print-audiogram" checked> Audiograma</label>
+                <label><input type="checkbox" id="print-basic-report" checked> Informe Básico</label>
+                <label><input type="checkbox" id="print-detailed-report"> Informe Detallado</label>
+            </div>
+            <div class="button-group">
+                <button id="confirm-print-btn">🖨️ Imprimir</button>
+                <button id="cancel-print-btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

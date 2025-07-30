@@ -258,7 +258,10 @@ function calculateAverage(data, freqsToUse) {
 }
 
 function calculatePABC(avgOD, avgOI) {
-    return ((avgOD * 5) + (avgOI * 1)) / 6;
+    const lossOD = Math.max(0, (avgOD - 25)) * 1.5;
+    const lossOI = Math.max(0, (avgOI - 25)) * 1.5;
+    const pabc = ((lossOD * 5) + (lossOI * 1)) / 6;
+    return { pabc, lossOD, lossOI };
 }
 
 function diagnoseHipoacusia(earVA, earVO) {
@@ -399,9 +402,9 @@ Nº de Historia: ${document.getElementById('history-number').value || 'N/D'}
 Fecha de Audiometría: ${document.getElementById('audiometry-date').value || 'N/D'}
 
 Resultados Globales de Pérdida Auditiva (según fórmulas internas de cálculo):
-   - Oído Derecho (OD): ${od.avgVA.toFixed(1)} dB HL
-   - Oído Izquierdo (OI): ${oi.avgVA.toFixed(1)} dB HL
-   - Pérdida Auditiva Bilateral Combinada (PABC): ${pabc.toFixed(2)} %
+   - Oído Derecho (OD): ${od.avgVA.toFixed(1)} dB HL (Pérdida: ${pabc.lossOD.toFixed(2)}%)
+   - Oído Izquierdo (OI): ${oi.avgVA.toFixed(1)} dB HL (Pérdida: ${pabc.lossOI.toFixed(2)}%)
+   - Pérdida Auditiva Bilateral Combinada (PABC): ${pabc.pabc.toFixed(2)} %
 
 Diagnóstico del Tipo de Hipoacusia:
    - Oído Derecho (OD): ${od.diagnosis}
@@ -435,6 +438,7 @@ function generateDetailedReport() {
      - Vía Ósea (VO):
        ${getFormattedValues(od.vo)}
      - Diagnóstico del Tipo de Hipoacusia: ${od.diagnosis}
+     - Porcentaje de Pérdida OD: ${pabc.lossOD.toFixed(2)}%
 
    **Oído Izquierdo (OI):**
      - Vía Aérea (VA):
@@ -442,12 +446,13 @@ function generateDetailedReport() {
      - Vía Ósea (VO):
        ${getFormattedValues(oi.vo)}
      - Diagnóstico del Tipo de Hipoacusia: ${oi.diagnosis}
+     - Porcentaje de Pérdida OI: ${pabc.lossOI.toFixed(2)}%
 
-   **Pérdida Auditiva Bilateral Combinada (PABC):** ${pabc.toFixed(2)}%
+   **Pérdida Auditiva Bilateral Combinada (PABC):** ${pabc.pabc.toFixed(2)}%
 
 **3. Grado de Discapacidad Auditiva (según Real Decreto 888/2022)**
 
-   - El porcentaje de la Pérdida Auditiva Bilateral Combinada (PABC) calculada, ${pabc.toFixed(2)}%, se correlaciona con el **${disability.grade}** de discapacidad auditiva.
+   - El porcentaje de la Pérdida Auditiva Bilateral Combinada (PABC) calculada, ${pabc.pabc.toFixed(2)}%, se correlaciona con el **${disability.grade}** de discapacidad auditiva.
 
 **4. Observaciones Adicionales**
 ${document.getElementById('observations').value || 'Sin observaciones adicionales.'}
@@ -471,6 +476,17 @@ function copyBasicReport() { navigator.clipboard.writeText(document.getElementBy
 function copyDetailedReport() { navigator.clipboard.writeText(document.getElementById('detailed-report-content').textContent).then(() => showToast('Informe detallado copiado.', 'success'));}
 function copyComparisonReport() { navigator.clipboard.writeText(document.getElementById('comparison-report-content').textContent).then(() => showToast('Informe comparativo copiado.', 'success'));}
 
+function copyAudiogram() {
+    const audiogramContainer = document.getElementById('audiogram-container');
+    html2canvas(audiogramContainer).then(canvas => {
+        canvas.toBlob(blob => {
+            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => showToast('Gráfica copiada.', 'success'))
+                .catch(() => showToast('Error al copiar gráfica.', 'error'));
+        });
+    });
+}
+
 function resetApplication() {
     document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => input.value = '');
     document.querySelectorAll('input[type="number"]').forEach(input => input.value = '0');
@@ -484,9 +500,41 @@ function resetApplication() {
 }
 
 function printAudiometry() {
-    // Simplemente llama a la función de impresión del navegador.
-    // Los estilos de @media print en CSS se encargarán del resto.
-    window.print();
+    const modal = document.getElementById('print-modal');
+    modal.style.display = 'flex';
+
+    document.getElementById('confirm-print-btn').onclick = () => {
+        const printSections = {
+            patientInfo: document.getElementById('print-patient-info').checked,
+            observations: document.getElementById('print-observations').checked,
+            resultsTable: document.getElementById('print-results-table').checked,
+            audiogram: document.getElementById('print-audiogram').checked,
+            basicReport: document.getElementById('print-basic-report').checked,
+            detailedReport: document.getElementById('print-detailed-report').checked,
+        };
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @media print {
+                .patient-info-section { display: ${printSections.patientInfo ? 'block' : 'none'}; }
+                .observations-section { display: ${printSections.observations ? 'block' : 'none'}; }
+                .results-section { display: ${printSections.resultsTable ? 'block' : 'none'}; }
+                .audiogram-section { display: ${printSections.audiogram ? 'block' : 'none'}; }
+                .report-section[data-report-type="basic"] { display: ${printSections.basicReport ? 'block' : 'none'}; }
+                .report-section[data-report-type="detailed"] { display: ${printSections.detailedReport ? 'block' : 'none'}; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        window.print();
+
+        document.head.removeChild(style);
+        modal.style.display = 'none';
+    };
+
+    document.getElementById('cancel-print-btn').onclick = () => {
+        modal.style.display = 'none';
+    };
 }
 
 // --- Comparación ---
