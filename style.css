@@ -475,3 +475,4 @@ tbody tr:nth-child(odd) { background-color: var(--table-odd-row-bg); }
     gap: 10px;
     cursor: pointer;
 }
+
