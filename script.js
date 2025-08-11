@@ -395,10 +395,8 @@ function getDisabilityGrade(pabc) {
 
 function generateBasicReport() {
     const { od, oi, pabc } = window.currentAudiometryResults;
-    const disability = getDisabilityGrade(pabc);
-    return `--- INFORME BÁSICO DE AUDIOMETRÍA ---
-
-Nº de Historia: ${document.getElementById('history-number').value || 'N/D'}
+    const disability = getDisabilityGrade(pabc.pabc);
+    return `Nº de Historia: ${document.getElementById('history-number').value || 'N/D'}
 Fecha de Audiometría: ${document.getElementById('audiometry-date').value || 'N/D'}
 
 Resultados Globales de Pérdida Auditiva (según fórmulas internas de cálculo):
@@ -415,18 +413,14 @@ Valoración del Grado de Discapacidad Auditiva (según Real Decreto 888/2022):
      (Corresponde a un rango del ${disability.range} de la PABC según el baremo actualizado).
 
 Observaciones:
-${document.getElementById('observations').value || 'Sin observaciones.'}
-
---- FIN INFORME BÁSICO ---`;
+${document.getElementById('observations').value || 'Sin observaciones.'}`;
 }
 
 function generateDetailedReport() {
     const { od, oi, pabc } = window.currentAudiometryResults;
-    const disability = getDisabilityGrade(pabc);
+    const disability = getDisabilityGrade(pabc.pabc);
     const getFormattedValues = (data) => FREQUENCIES.map(freq => `${freq}Hz: ${!isNaN(data[freq]) ? data[freq] : '-'}`).join(' | ');
-    return `--- INFORME DETALLADO DE AUDIOMETRÍA ---
-
-**1. Datos del Paciente y Evaluación**
+    return `**1. Datos del Paciente y Evaluación**
    - Nº de Historia: ${document.getElementById('history-number').value || 'N/D'}
    - Fecha de Audiometría: ${document.getElementById('audiometry-date').value || 'N/D'}
 
@@ -455,9 +449,11 @@ function generateDetailedReport() {
    - El porcentaje de la Pérdida Auditiva Bilateral Combinada (PABC) calculada, ${pabc.pabc.toFixed(2)}%, se correlaciona con el **${disability.grade}** de discapacidad auditiva.
 
 **4. Observaciones Adicionales**
-${document.getElementById('observations').value || 'Sin observaciones adicionales.'}
+${document.getElementById('observations').value || 'Sin observaciones adicionales.'}`;
+}
 
---- FIN INFORME DETALLADO ---`;
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // --- Acciones de UI ---
@@ -542,30 +538,28 @@ function generateComparisonReport(aud1, aud2) {
     const avgOD1 = calculateAverage(aud1.va.od, KEY_FREQUENCIES_FOR_AVG);
     const avgOI1 = calculateAverage(aud1.va.oi, KEY_FREQUENCIES_FOR_AVG);
     const pabc1 = calculatePABC(avgOD1, avgOI1);
-    const disability1 = getDisabilityGrade(pabc1);
+    const disability1 = getDisabilityGrade(pabc1.pabc);
     const diagnosisOD1 = diagnoseHipoacusia(aud1.va.od, aud1.vo.od);
     const diagnosisOI1 = diagnoseHipoacusia(aud1.va.oi, aud1.vo.oi);
 
     const avgOD2 = calculateAverage(aud2.va.od, KEY_FREQUENCIES_FOR_AVG);
     const avgOI2 = calculateAverage(aud2.va.oi, KEY_FREQUENCIES_FOR_AVG);
     const pabc2 = calculatePABC(avgOD2, avgOI2);
-    const disability2 = getDisabilityGrade(pabc2);
+    const disability2 = getDisabilityGrade(pabc2.pabc);
     const diagnosisOD2 = diagnoseHipoacusia(aud2.va.od, aud2.vo.od);
     const diagnosisOI2 = diagnoseHipoacusia(aud2.va.oi, aud2.vo.oi);
 
-    let report = `--- INFORME DE COMPARACIÓN DE AUDIOMETRÍAS ---
-
-**Audiometría 1 (Basal):**
+    let report = `**Audiometría 1 (Basal):**
    - Fecha: ${aud1.audiometryDate}
    - Promedio OD (VA): ${avgOD1.toFixed(1)} dB HL | OI (VA): ${avgOI1.toFixed(1)} dB HL
-   - PABC: ${pabc1.toFixed(2)}%
+   - PABC: ${pabc1.pabc.toFixed(2)}% 
    - Grado: ${disability1.grade}
    - Diagnóstico OD: ${diagnosisOD1} | OI: ${diagnosisOI1}
 
 **Audiometría 2 (Seguimiento):**
    - Fecha: ${aud2.audiometryDate}
    - Promedio OD (VA): ${avgOD2.toFixed(1)} dB HL | OI (VA): ${avgOI2.toFixed(1)} dB HL
-   - PABC: ${pabc2.toFixed(2)}%
+   - PABC: ${pabc2.pabc.toFixed(2)}% 
    - Grado: ${disability2.grade}
    - Diagnóstico OD: ${diagnosisOD2} | OI: ${diagnosisOI2}
 
@@ -588,9 +582,9 @@ function generateComparisonReport(aud1, aud2) {
         report += `- El grado de discapacidad se mantiene en ${disability2.grade}.\n`;
     }
     
-    report += `--- FIN DEL INFORME ---`;
     return report;
 }
+
 
 function compareAudiometries() {
     const id1 = document.getElementById('select-audiometry-compare-1').value;
