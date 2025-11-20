@@ -238,8 +238,8 @@ function calculateAndDisplay() {
         rowSum.innerHTML = `<td>Sumatorio ${ear.toUpperCase()}</td><td colspan="${FREQUENCIES.length}">${sumVA} dB HL (Media VA: ${avgVA.toFixed(1)} dB HL)</td>`;
     });
 
-    const pabc = calculatePABC(results.od.avgVA, results.oi.avgVA);
-    window.currentAudiometryResults = { ...results, pabc };
+    const binauralDeficiency = calculateBinauralDeficiency(results.od.va, results.oi.va);
+    window.currentAudiometryResults = { ...results, binauralDeficiency };
 
     drawAudiogram(results.od.va, results.od.vo, results.oi.va, results.oi.vo);
     displayReports();
@@ -257,11 +257,33 @@ function calculateAverage(data, freqsToUse) {
     return count > 0 ? sum / count : 0;
 }
 
-function calculatePABC(avgOD, avgOI) {
-    const lossOD = Math.max(0, (avgOD - 25)) * 1.5;
-    const lossOI = Math.max(0, (avgOI - 25)) * 1.5;
-    const pabc = ((lossOD * 5) + (lossOI * 1)) / 6;
-    return { pabc, lossOD, lossOI };
+function calculateBinauralDeficiency(vaOD, vaOI) {
+    const freqs = KEY_FREQUENCIES_FOR_AVG; // [500, 1000, 2000, 4000]
+
+    const sumOD = freqs.reduce((acc, f) => acc + (vaOD[f] || 0), 0);
+    const sumOI = freqs.reduce((acc, f) => acc + (vaOI[f] || 0), 0);
+
+    // Calculate monaural impairment for each ear. Formula: ((Sum / 4) - 25) * 1.5
+    // This is equivalent to (Suma - 100) * 0.375, capped between 0% and 100%.
+    let impairmentOD = Math.max(0, (sumOD / 4) - 25) * 1.5;
+    let impairmentOI = Math.max(0, (sumOI / 4) - 25) * 1.5;
+    
+    impairmentOD = Math.min(100, impairmentOD);
+    impairmentOI = Math.min(100, impairmentOI);
+
+    const betterEarImpairment = Math.min(impairmentOD, impairmentOI);
+    const worseEarImpairment = Math.max(impairmentOD, impairmentOI);
+
+    // ASHA Formula for Binaural Deficiency, as per Orden DSA/934/2023
+    const binauralDeficiency = ((betterEarImpairment * 5) + worseEarImpairment) / 6;
+
+    return {
+        binauralDeficiency: binauralDeficiency,
+        impairmentOD: impairmentOD,
+        impairmentOI: impairmentOI,
+        sumOD: sumOD,
+        sumOI: sumOI
+    };
 }
 
 function diagnoseHipoacusia(earVA, earVO) {
@@ -385,68 +407,181 @@ function displayReports() {
     }
 }
 
-function getDisabilityGrade(pabc) {
-    if (pabc >= 96) return { grade: "Grado 4 (Total o Completa)", range: "96% al 100%" };
-    if (pabc >= 50) return { grade: "Grado 3 (Grave)", range: "50% al 95%" };
-    if (pabc >= 25) return { grade: "Grado 2 (Moderada)", range: "25% al 49%" };
-    if (pabc >= 5) return { grade: "Grado 1 (Leve)", range: "5% al 24%" };
-    return { grade: "Grado 0 (No hay discapacidad)", range: "0% al 4%" };
+function getDisabilityFromTableA(deficiency) {
+    if (deficiency <= 0) return 0;
+    if (deficiency <= 1.6) return 1;
+    if (deficiency <= 3.2) return 2;
+    if (deficiency <= 4.8) return 3;
+    if (deficiency <= 6.4) return 4;
+    if (deficiency <= 8.0) return 5;
+    if (deficiency <= 9.6) return 6;
+    if (deficiency <= 11.2) return 7;
+    if (deficiency <= 12.8) return 8;
+    if (deficiency <= 14.4) return 9;
+    if (deficiency <= 16.0) return 10;
+    if (deficiency <= 17.6) return 11;
+    if (deficiency <= 19.2) return 12;
+    if (deficiency <= 20.8) return 13;
+    if (deficiency <= 22.4) return 14;
+    if (deficiency <= 23.9) return 15;
+    if (deficiency <= 25.4) return 16;
+    if (deficiency <= 26.9) return 17;
+    if (deficiency <= 28.4) return 18;
+    if (deficiency <= 29.9) return 19;
+    if (deficiency <= 32.5) return 20;
+    if (deficiency <= 35.0) return 21;
+    if (deficiency <= 37.5) return 22;
+    if (deficiency <= 40.0) return 23;
+    if (deficiency <= 42.5) return 24;
+    if (deficiency <= 45.0) return 25;
+    if (deficiency <= 47.5) return 26;
+    if (deficiency <= 50.0) return 27;
+    if (deficiency <= 52.5) return 28;
+    if (deficiency <= 54.9) return 29;
+    if (deficiency <= 59.5) return 30;
+    if (deficiency <= 64.0) return 31;
+    if (deficiency <= 68.5) return 32;
+    if (deficiency <= 73.0) return 33;
+    if (deficiency <= 77.5) return 34;
+    if (deficiency <= 81.9) return 35;
+    if (deficiency <= 85.6) return 36;
+    if (deficiency <= 89.2) return 37;
+    if (deficiency <= 92.8) return 38;
+    if (deficiency <= 96.4) return 39;
+    if (deficiency <= 100) return 40;
+    return 40; // Return max value for anything over 100
+}
+
+function getDisabilityFromTableB(deficiency) {
+    if (deficiency <= 1.4) return 0;
+    if (deficiency <= 4.2) return 1;
+    if (deficiency <= 7.1) return 2;
+    if (deficiency <= 9.9) return 3;
+    if (deficiency <= 12.8) return 4;
+    if (deficiency <= 15.7) return 5;
+    if (deficiency <= 18.5) return 6;
+    if (deficiency <= 21.4) return 7;
+    if (deficiency <= 24.2) return 8;
+    if (deficiency <= 27.1) return 9;
+    if (deficiency <= 29.9) return 10;
+    if (deficiency <= 32.8) return 11;
+    if (deficiency <= 35.7) return 12;
+    if (deficiency <= 38.5) return 13;
+    if (deficiency <= 41.4) return 14;
+    if (deficiency <= 44.2) return 15;
+    if (deficiency <= 47.1) return 16;
+    if (deficiency <= 49.9) return 17;
+    if (deficiency <= 52.8) return 18;
+    if (deficiency <= 55.7) return 19;
+    if (deficiency <= 58.5) return 20;
+    if (deficiency <= 61.4) return 21;
+    if (deficiency <= 64.2) return 22;
+    if (deficiency <= 67.1) return 23;
+    if (deficiency <= 69.9) return 24;
+    if (deficiency <= 72.8) return 25;
+    if (deficiency <= 75.7) return 26;
+    if (deficiency <= 78.5) return 27;
+    if (deficiency <= 81.4) return 28;
+    if (deficiency <= 84.2) return 29;
+    if (deficiency <= 87.1) return 30;
+    if (deficiency <= 89.9) return 31;
+    if (deficiency <= 92.8) return 32;
+    if (deficiency <= 95.7) return 33;
+    if (deficiency <= 98.5) return 34;
+    if (deficiency <= 100) return 35;
+    return 35; // Return max value for anything over 100
+}
+
+function getDisabilityPercentage(binauralDeficiency, diagnosisOD, diagnosisOI) {
+    // Use table 5.3B only if BOTH ears have conductive loss. Otherwise, use 5.3A.
+    const useTableB = diagnosisOD === "De Transmisión (Conductiva)" && diagnosisOI === "De Transmisión (Conductiva)";
+
+    // Round the deficiency to one decimal place to avoid floating point issues with table boundaries
+    const roundedDeficiency = parseFloat(binauralDeficiency.toFixed(1));
+
+    if (useTableB) {
+        return getDisabilityFromTableB(roundedDeficiency);
+    } else {
+        return getDisabilityFromTableA(roundedDeficiency);
+    }
+}
+
+function getDisabilityClass(disabilityPercentage) {
+    // Based on RD 888/2022, Table 5.4
+    if (disabilityPercentage > 95) return { class: "Clase 5 (Absoluta)", range: "> 95%" };
+    if (disabilityPercentage >= 75) return { class: "Clase 4 (Total)", range: "75% - 95%" };
+    if (disabilityPercentage >= 50) return { class: "Clase 3 (Grave)", range: "50% - 74%" };
+    if (disabilityPercentage >= 25) return { class: "Clase 2 (Moderada)", range: "25% - 49%" };
+    if (disabilityPercentage >= 5) return { class: "Clase 1 (Leve)", range: "5% - 24%" };
+    return { class: "Clase 0 (Sin discapacidad)", range: "0% - 4%" };
 }
 
 function generateBasicReport() {
-    const { od, oi, pabc } = window.currentAudiometryResults;
-    const disability = getDisabilityGrade(pabc.pabc);
+    const { od, oi, binauralDeficiency } = window.currentAudiometryResults;
+    
+    const finalDisabilityPercentage = getDisabilityPercentage(binauralDeficiency.binauralDeficiency, od.diagnosis, oi.diagnosis);
+    const disabilityClass = getDisabilityClass(finalDisabilityPercentage);
+
     return `Nº de Historia: ${document.getElementById('history-number').value || 'N/D'}
 Fecha de Audiometría: ${document.getElementById('audiometry-date').value || 'N/D'}
 
-Resultados Globales de Pérdida Auditiva (según fórmulas internas de cálculo):
-   - Oído Derecho (OD): ${od.avgVA.toFixed(1)} dB HL (Pérdida: ${pabc.lossOD.toFixed(2)}%)
-   - Oído Izquierdo (OI): ${oi.avgVA.toFixed(1)} dB HL (Pérdida: ${pabc.lossOI.toFixed(2)}%)
-   - Pérdida Auditiva Bilateral Combinada (PABC): ${pabc.pabc.toFixed(2)} %
+Resultados según Orden DSA/934/2023:
+   - Deficiencia Monoaural OD: ${binauralDeficiency.impairmentOD.toFixed(2)}% (Suma: ${binauralDeficiency.sumOD} dB)
+   - Deficiencia Monoaural OI: ${binauralDeficiency.impairmentOI.toFixed(2)}% (Suma: ${binauralDeficiency.sumOI} dB)
+   - Deficiencia Auditiva Binaural: ${binauralDeficiency.binauralDeficiency.toFixed(2)}%
 
 Diagnóstico del Tipo de Hipoacusia:
    - Oído Derecho (OD): ${od.diagnosis}
    - Oído Izquierdo (OI): ${oi.diagnosis}
 
-Valoración del Grado de Discapacidad Auditiva (según Real Decreto 888/2022):
-   - Grado de Discapacidad Estimado: ${disability.grade}
-     (Corresponde a un rango del ${disability.range} de la PABC según el baremo actualizado).
+Valoración de la Discapacidad Auditiva (RD 888/2022):
+   - Porcentaje de Discapacidad: ${finalDisabilityPercentage.toFixed(2)}%
+   - Clase de Discapacidad: ${disabilityClass.class} (Rango: ${disabilityClass.range})
 
 Observaciones:
 ${document.getElementById('observations').value || 'Sin observaciones.'}`;
 }
 
 function generateDetailedReport() {
-    const { od, oi, pabc } = window.currentAudiometryResults;
-    const disability = getDisabilityGrade(pabc.pabc);
+    const { od, oi, binauralDeficiency } = window.currentAudiometryResults;
+    const finalDisabilityPercentage = getDisabilityPercentage(binauralDeficiency.binauralDeficiency, od.diagnosis, oi.diagnosis);
+    const disabilityClass = getDisabilityClass(finalDisabilityPercentage);
     const getFormattedValues = (data) => FREQUENCIES.map(freq => `${freq}Hz: ${!isNaN(data[freq]) ? data[freq] : '-'}`).join(' | ');
+
     return `**1. Datos del Paciente y Evaluación**
    - Nº de Historia: ${document.getElementById('history-number').value || 'N/D'}
    - Fecha de Audiometría: ${document.getElementById('audiometry-date').value || 'N/D'}
 
-**2. Umbrales Auditivos por Frecuencia (dB HL)**
+**2. Umbrales Auditivos y Diagnóstico por Oído (dB HL)**
 
    **Oído Derecho (OD):**
-     - Vía Aérea (VA):
-       ${getFormattedValues(od.va)}
-     - Vía Ósea (VO):
-       ${getFormattedValues(od.vo)}
+     - Vía Aérea (VA): ${getFormattedValues(od.va)}
+     - Vía Ósea (VO): ${getFormattedValues(od.vo)}
      - Diagnóstico del Tipo de Hipoacusia: ${od.diagnosis}
-     - Porcentaje de Pérdida OD: ${pabc.lossOD.toFixed(2)}%
 
    **Oído Izquierdo (OI):**
-     - Vía Aérea (VA):
-       ${getFormattedValues(oi.va)}
-     - Vía Ósea (VO):
-       ${getFormattedValues(oi.vo)}
+     - Vía Aérea (VA): ${getFormattedValues(oi.va)}
+     - Vía Ósea (VO): ${getFormattedValues(oi.vo)}
      - Diagnóstico del Tipo de Hipoacusia: ${oi.diagnosis}
-     - Porcentaje de Pérdida OI: ${pabc.lossOI.toFixed(2)}%
 
-   **Pérdida Auditiva Bilateral Combinada (PABC):** ${pabc.pabc.toFixed(2)}%
+**3. Cálculo de Deficiencia y Discapacidad (Orden DSA/934/2023 y RD 888/2022)**
 
-**3. Grado de Discapacidad Auditiva (según Real Decreto 888/2022)**
+   **Paso 1: Cálculo de Deficiencias Monoaurales**
+     - Suma de umbrales OD (500-4k Hz): ${binauralDeficiency.sumOD} dB
+     - Deficiencia Monoaural OD: ${binauralDeficiency.impairmentOD.toFixed(2)}%
 
-   - El porcentaje de la Pérdida Auditiva Bilateral Combinada (PABC) calculada, ${pabc.pabc.toFixed(2)}%, se correlaciona con el **${disability.grade}** de discapacidad auditiva.
+     - Suma de umbrales OI (500-4k Hz): ${binauralDeficiency.sumOI} dB
+     - Deficiencia Monoaural OI: ${binauralDeficiency.impairmentOI.toFixed(2)}%
+
+   **Paso 2: Cálculo de Deficiencia Binaural (Fórmula ASHA)**
+     - Deficiencia Auditiva Binaural: ${binauralDeficiency.binauralDeficiency.toFixed(2)}%
+
+   **Paso 3: Conversión a Porcentaje de Discapacidad**
+     - Porcentaje de Discapacidad Final: ${finalDisabilityPercentage.toFixed(2)}%
+     - (Cálculo basado en Tabla ${od.diagnosis === "De Transmisión (Conductiva)" && oi.diagnosis === "De Transmisión (Conductiva)" ? '5.3.B' : '5.3.A'})
+
+   **Paso 4: Determinación de la Clase de Discapacidad**
+     - Clase de Discapacidad: ${disabilityClass.class} (Rango ${disabilityClass.range})
 
 **4. Observaciones Adicionales**
 ${document.getElementById('observations').value || 'Sin observaciones adicionales.'}`;
@@ -535,51 +670,48 @@ function printAudiometry() {
 
 // --- Comparación ---
 function generateComparisonReport(aud1, aud2) {
-    const avgOD1 = calculateAverage(aud1.va.od, KEY_FREQUENCIES_FOR_AVG);
-    const avgOI1 = calculateAverage(aud1.va.oi, KEY_FREQUENCIES_FOR_AVG);
-    const pabc1 = calculatePABC(avgOD1, avgOI1);
-    const disability1 = getDisabilityGrade(pabc1.pabc);
+    // --- Audiometry 1 Calculations ---
     const diagnosisOD1 = diagnoseHipoacusia(aud1.va.od, aud1.vo.od);
     const diagnosisOI1 = diagnoseHipoacusia(aud1.va.oi, aud1.vo.oi);
+    const binauralDeficiency1 = calculateBinauralDeficiency(aud1.va.od, aud1.va.oi);
+    const disabilityPercentage1 = getDisabilityPercentage(binauralDeficiency1.binauralDeficiency, diagnosisOD1, diagnosisOI1);
+    const disabilityClass1 = getDisabilityClass(disabilityPercentage1);
 
-    const avgOD2 = calculateAverage(aud2.va.od, KEY_FREQUENCIES_FOR_AVG);
-    const avgOI2 = calculateAverage(aud2.va.oi, KEY_FREQUENCIES_FOR_AVG);
-    const pabc2 = calculatePABC(avgOD2, avgOI2);
-    const disability2 = getDisabilityGrade(pabc2.pabc);
+    // --- Audiometry 2 Calculations ---
     const diagnosisOD2 = diagnoseHipoacusia(aud2.va.od, aud2.vo.od);
     const diagnosisOI2 = diagnoseHipoacusia(aud2.va.oi, aud2.vo.oi);
+    const binauralDeficiency2 = calculateBinauralDeficiency(aud2.va.od, aud2.va.oi);
+    const disabilityPercentage2 = getDisabilityPercentage(binauralDeficiency2.binauralDeficiency, diagnosisOD2, diagnosisOI2);
+    const disabilityClass2 = getDisabilityClass(disabilityPercentage2);
 
     let report = `**Audiometría 1 (Basal):**
    - Fecha: ${aud1.audiometryDate}
-   - Promedio OD (VA): ${avgOD1.toFixed(1)} dB HL | OI (VA): ${avgOI1.toFixed(1)} dB HL
-   - PABC: ${pabc1.pabc.toFixed(2)}% 
-   - Grado: ${disability1.grade}
+   - Def. Binaural: ${binauralDeficiency1.binauralDeficiency.toFixed(2)}% | Discapacidad: ${disabilityPercentage1.toFixed(2)}%
+   - Clase: ${disabilityClass1.class}
    - Diagnóstico OD: ${diagnosisOD1} | OI: ${diagnosisOI1}
 
 **Audiometría 2 (Seguimiento):**
    - Fecha: ${aud2.audiometryDate}
-   - Promedio OD (VA): ${avgOD2.toFixed(1)} dB HL | OI (VA): ${avgOI2.toFixed(1)} dB HL
-   - PABC: ${pabc2.pabc.toFixed(2)}% 
-   - Grado: ${disability2.grade}
+   - Def. Binaural: ${binauralDeficiency2.binauralDeficiency.toFixed(2)}% | Discapacidad: ${disabilityPercentage2.toFixed(2)}%
+   - Clase: ${disabilityClass2.class}
    - Diagnóstico OD: ${diagnosisOD2} | OI: ${diagnosisOI2}
 
 **Análisis Comparativo:**
 `;
 
-    const diffOD = avgOD2 - avgOD1;
-    if (diffOD > 5) report += `- Empeoramiento en Oído Derecho de ${diffOD.toFixed(1)} dB.\n`;
-    else if (diffOD < -5) report += `- Mejora en Oído Derecho de ${Math.abs(diffOD).toFixed(1)} dB.\n`;
-    else report += `- Oído Derecho se mantiene estable.\n`;
-
-    const diffOI = avgOI2 - avgOI1;
-    if (diffOI > 5) report += `- Empeoramiento en Oído Izquierdo de ${diffOI.toFixed(1)} dB.\n`;
-    else if (diffOI < -5) report += `- Mejora en Oído Izquierdo de ${Math.abs(diffOI).toFixed(1)} dB.\n`;
-    else report += `- Oído Izquierdo se mantiene estable.\n`;
-
-    if (disability1.grade !== disability2.grade) {
-        report += `- El grado de discapacidad ha cambiado de ${disability1.grade} a ${disability2.grade}.\n`;
+    const diffDisability = disabilityPercentage2 - disabilityPercentage1;
+    if (diffDisability > 2) {
+        report += `- Empeoramiento global, con un aumento de ${diffDisability.toFixed(2)} puntos en el porcentaje de discapacidad.\n`;
+    } else if (diffDisability < -2) {
+        report += `- Mejora global, con una reducción de ${Math.abs(diffDisability).toFixed(2)} puntos en el porcentaje de discapacidad.\n`;
     } else {
-        report += `- El grado de discapacidad se mantiene en ${disability2.grade}.\n`;
+        report += `- El porcentaje de discapacidad se mantiene relativamente estable.\n`;
+    }
+
+    if (disabilityClass1.class !== disabilityClass2.class) {
+        report += `- La clase de discapacidad ha cambiado de ${disabilityClass1.class} a ${disabilityClass2.class}.\n`;
+    } else {
+        report += `- La clase de discapacidad se mantiene en ${disabilityClass2.class}.\n`;
     }
     
     return report;
